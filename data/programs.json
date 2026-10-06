@@ -1,0 +1,82 @@
+{
+    "reference_time": "2026-10-09T12:00:00+02:00",
+    "programs": [
+        {
+            "id": 1,
+            "title": "Pilisi családi panorámatúra",
+            "location": "Dobogókő",
+            "start_at": "2026-10-10T09:00:00+02:00",
+            "capacity": 20,
+            "booked": 11,
+            "difficulty": "könnyű",
+            "price_huf": 4900,
+            "cancelled": false
+        },
+        {
+            "id": 2,
+            "title": "Naplemente-túra a Börzsönyben",
+            "location": "Királyrét",
+            "start_at": "2026-10-10T17:00:00+02:00",
+            "capacity": 12,
+            "booked": 10,
+            "difficulty": "közepes",
+            "price_huf": 6900,
+            "cancelled": false
+        },
+        {
+            "id": 3,
+            "title": "Dunakanyari kerékpártúra",
+            "location": "Visegrád",
+            "start_at": "2026-10-11T08:00:00+02:00",
+            "capacity": 15,
+            "booked": 15,
+            "difficulty": "nehéz",
+            "price_huf": 7900,
+            "cancelled": false
+        },
+        {
+            "id": 4,
+            "title": "Barlangi kalandtúra",
+            "location": "Miskolc",
+            "start_at": "2026-10-11T10:00:00+02:00",
+            "capacity": 25,
+            "booked": 8,
+            "difficulty": "közepes",
+            "price_huf": 5900,
+            "cancelled": true
+        },
+        {
+            "id": 5,
+            "title": "Kezdő kajaktúra",
+            "location": "Tiszafüred",
+            "start_at": "2026-10-11T13:00:00+02:00",
+            "capacity": 0,
+            "booked": 2,
+            "difficulty": "könnyű",
+            "price_huf": 8500,
+            "cancelled": false
+        },
+        {
+            "id": 6,
+            "title": "Csillagles a hegytetőn",
+            "location": "Mátraszentimre",
+            "start_at": "2026-10-08T19:00:00+02:00",
+            "capacity": 18,
+            "booked": 7,
+            "difficulty": "közepes",
+            "price_huf": 3900,
+            "cancelled": false
+        },
+        {
+            "id": 7,
+            "title": "Kisvasutas családi kirándulás",
+            "location": "Szilvásvárad",
+            "start_at": "2026-10-10T11:00:00+02:00",
+            "capacity": 30,
+            "booked": 24,
+            "difficulty": null,
+            "price_huf": 0,
+            "cancelled": false
+        }
+    ]
+}
