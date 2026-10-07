@@ -15,6 +15,7 @@ class Plugin
     {
         add_action('rest_api_init', [$this, 'registerRestRoutes']);
         add_action('init', [$this, 'registerShortcode']);
+        add_action('wp_enqueue_scripts', [$this, 'registerAssets']);
     }
 
     public function registerRestRoutes(): void
@@ -28,14 +29,27 @@ class Plugin
 
     public function registerShortcode(): void
     {
-        add_shortcode('hetvegi_kalandmento', [$this, 'renderShortcode']);
+        $shortcode = new Shortcode();
+        add_shortcode('hetvegi_kalandmento', [$shortcode, 'render']);
     }
 
-    public function renderShortcode(): string
+    public function registerAssets(): void
     {
-        wp_enqueue_script('hetvegi-kalandmento-frontend');
-        wp_enqueue_style('hetvegi-kalandmento-frontend');
-
-        return '<div class="hk-container">Programok betöltése...</div>';
+        wp_register_script(
+            'hetvegi-kalandmento-frontend',
+            HK_PLUGIN_URL . 'assets/js/frontend.js',
+            [],
+            HK_VERSION,
+            true
+        );
+        wp_register_style(
+            'hetvegi-kalandmento-frontend',
+            HK_PLUGIN_URL . 'assets/css/frontend.css',
+            [],
+            HK_VERSION
+        );
+        wp_localize_script('hetvegi-kalandmento-frontend', 'hkData', [
+            'restUrl' => rest_url('hetvegi-kalandmento/v1/programs'),
+        ]);
     }
 }
