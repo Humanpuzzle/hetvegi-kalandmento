@@ -18,7 +18,7 @@ class ProgramProvider
 
     public function __construct(?string $dataFile = null)
     {
-        $this->dataFile = $dataFile ?? plugin_dir_path(__FILE__) . '../../data/programs.json';
+        $this->dataFile = $dataFile ?? HK_PLUGIN_DIR . 'data/programs.json';
     }
 
     private function loadData(): array

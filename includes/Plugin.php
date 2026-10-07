@@ -13,25 +13,20 @@ class Plugin
 {
     public function __construct()
     {
-        add_action('plugins_loaded', [$this, 'init']);
+        add_action('rest_api_init', [$this, 'registerRestRoutes']);
+        add_action('init', [$this, 'registerShortcode']);
     }
 
-    public function init(): void
-    {
-        $this->registerRestRoutes();
-        $this->registerShortcode();
-    }
-
-    private function registerRestRoutes(): void
+    public function registerRestRoutes(): void
     {
         $provider = new ProgramProvider();
         $calculator = new ProgramStatusCalculator($provider->getReferenceTime());
         $restController = new RestController($provider, $calculator);
 
-        add_action('rest_api_init', [$restController, 'registerRoutes']);
+        $restController->registerRoutes();
     }
 
-    private function registerShortcode(): void
+    public function registerShortcode(): void
     {
         add_shortcode('hetvegi_kalandmento', [$this, 'renderShortcode']);
     }
