@@ -1,0 +1,151 @@
+warning: in the working copy of 'includes/ProgramProvider.php', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'includes/ProgramStatusCalculator.php', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/includes/ProgramProvider.php b/includes/ProgramProvider.php[m
+[1mindex 2a66395..3878bda 100644[m
+[1m--- a/includes/ProgramProvider.php[m
+[1m+++ b/includes/ProgramProvider.php[m
+[36m@@ -7,6 +7,8 @@[m [mdeclare(strict_types=1);[m
+ [m
+ namespace HetvegiKalandmento;[m
+ [m
+[32m+[m[32muse RuntimeException;[m
+[32m+[m
+ defined('ABSPATH') || exit;[m
+ [m
+ class ProgramProvider[m
+[36m@@ -26,26 +28,26 @@[m [mclass ProgramProvider[m
+         }[m
+ [m
+         if (!file_exists($this->dataFile)) {[m
+[31m-            throw new \RuntimeException('A program adatfájl nem található');[m
+[32m+[m[32m            throw new RuntimeException('A program adatfájl nem található');[m
+         }[m
+ [m
+         $content = file_get_contents($this->dataFile);[m
+         if ($content === false) {[m
+[31m-            throw new \RuntimeException('Nem sikerült beolvasni a program adatfájlt');[m
+[32m+[m[32m            throw new RuntimeException('Nem sikerült beolvasni a program adatfájlt');[m
+         }[m
+ [m
+         try {[m
+             $data = json_decode($content, true, 512, JSON_THROW_ON_ERROR);[m
+[31m-        } catch (\JsonException $e) {[m
+[31m-            throw new \RuntimeException('Érvénytelen JSON a program adatokban: ' . $e->getMessage(), 0, $e);[m
+[32m+[m[32m        } catch (RuntimeException $e) {[m
+[32m+[m[32m            throw new RuntimeException('Érvénytelen JSON a program adatokban: ' . $e->getMessage(), 0, $e);[m
+         }[m
+ [m
+         if (!isset($data['programs']) || !is_array($data['programs'])) {[m
+[31m-            throw new \RuntimeException('Hiányzó vagy érvénytelen "programs" a fájlban');[m
+[32m+[m[32m            throw new RuntimeException('Hiányzó vagy érvénytelen "programs" a fájlban');[m
+         }[m
+ [m
+         if (!isset($data['reference_time']) || !is_string($data['reference_time'])) {[m
+[31m-            throw new \RuntimeException('Hiányzó vagy érvénytelen "reference_time" a fájlban');[m
+[32m+[m[32m            throw new RuntimeException('Hiányzó vagy érvénytelen "reference_time" a fájlban');[m
+         }[m
+ [m
+         $this->parsedData = $data;[m
+[1mdiff --git a/includes/ProgramStatusCalculator.php b/includes/ProgramStatusCalculator.php[m
+[1mindex ab8e017..995e335 100644[m
+[1m--- a/includes/ProgramStatusCalculator.php[m
+[1m+++ b/includes/ProgramStatusCalculator.php[m
+[36m@@ -19,12 +19,92 @@[m [mclass ProgramStatusCalculator[m
+ [m
+     public function calculate(array $program): array[m
+     {[m
+[31m-        // Business logic will be implemented in later milestones[m
+[31m-        // For now, return program with default status[m
+[31m-        $program['status'] = ProgramStatus::AVAILABLE->value;[m
+[31m-        $program['status_label'] = 'Elérhető';[m
+[31m-        $program['bookable'] = true;[m
+[32m+[m[32m        $status = $this->determineStatus($program);[m
+[32m+[m[32m        $remaining = $this->calculateRemaining($program);[m
+[32m+[m
+[32m+[m[32m        $program['status'] = $status->value;[m
+[32m+[m[32m        $program['status_label'] = $this->getStatusLabel($status);[m
+[32m+[m[32m        $program['bookable'] = $this->isBookable($status);[m
+[32m+[m[32m        $program['remaining'] = $remaining;[m
+ [m
+         return $program;[m
+     }[m
+[32m+[m
+[32m+[m[32m    private function getStatusLabel(ProgramStatus $status): string[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return match ($status) {[m
+[32m+[m[32m            ProgramStatus::AVAILABLE => 'Elérhető',[m
+[32m+[m[32m            ProgramStatus::LIMITED => 'Már csak néhány hely',[m
+[32m+[m[32m            ProgramStatus::FULL => 'Betelt',[m
+[32m+[m[32m            ProgramStatus::CANCELLED => 'Lemondva',[m
+[32m+[m[32m            ProgramStatus::NOT_BOOKABLE => 'Nem foglalható',[m
+[32m+[m[32m        };[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private function determineStatus(array $program): ProgramStatus[m
+[32m+[m[32m    {[m
+[32m+[m[32m        // 1. cancelled === true[m
+[32m+[m[32m        if (($program['cancelled'] ?? false) === true) {[m
+[32m+[m[32m            return ProgramStatus::CANCELLED;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // 2. Critical booking data is invalid[m
+[32m+[m[32m        $capacity = (int)($program['capacity'] ?? 0);[m
+[32m+[m[32m        $booked = (int)($program['booked'] ?? 0);[m
+[32m+[m
+[32m+[m[32m        if ($capacity <= 0 || $booked < 0 || $booked > $capacity) {[m
+[32m+[m[32m            return ProgramStatus::NOT_BOOKABLE;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // 3. start_at <= reference_time (past event)[m
+[32m+[m[32m        $startAt = $program['start_at'] ?? null;[m
+[32m+[m[32m        if ($startAt === null || !is_string($startAt)) {[m
+[32m+[m[32m            return ProgramStatus::NOT_BOOKABLE;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            $startDt = new \DateTime($startAt);[m
+[32m+[m[32m            $refDt = new \DateTime($this->referenceTime);[m
+[32m+[m[32m            if ($startDt <= $refDt) {[m
+[32m+[m[32m                return ProgramStatus::NOT_BOOKABLE;[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (\Exception) {[m
+[32m+[m[32m            return ProgramStatus::NOT_BOOKABLE;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // 4. booked >= capacity[m
+[32m+[m[32m        if ($booked >= $capacity) {[m
+[32m+[m[32m            return ProgramStatus::FULL;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // 5. remaining * 100 <= capacity * 20 (exact integer arithmetic)[m
+[32m+[m[32m        $remaining = $capacity - $booked;[m
+[32m+[m[32m        if ($remaining * 100 <= $capacity * 20) {[m
+[32m+[m[32m            return ProgramStatus::LIMITED;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // 6. otherwise[m
+[32m+[m[32m        return ProgramStatus::AVAILABLE;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private function calculateRemaining(array $program): int[m
+[32m+[m[32m    {[m
+[32m+[m[32m        $capacity = (int)($program['capacity'] ?? 0);[m
+[32m+[m[32m        $booked = (int)($program['booked'] ?? 0);[m
+[32m+[m
+[32m+[m[32m        if ($capacity <= 0 || $booked < 0) {[m
+[32m+[m[32m            return 0;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        $remaining = $capacity - $booked;[m
+[32m+[m[32m        return $remaining > 0 ? $remaining : 0;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private function isBookable(ProgramStatus $status): bool[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return match ($status) {[m
+[32m+[m[32m            ProgramStatus::AVAILABLE, ProgramStatus::LIMITED => true,[m
+[32m+[m[32m            default => false,[m
+[32m+[m[32m        };[m
+[32m+[m[32m    }[m
+ }[m
+\ No newline at end of file[m
