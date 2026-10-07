@@ -43,7 +43,7 @@ class Shortcode
 
   <div class="hk-programs" hidden>
     <ul class="hk-program-list" role="list"></ul>
-    <p class="hk-empty" hidden>Nincs a feltételeknek megfelelő program.</p>
+    <p class="hk-empty" hidden aria-live="polite">Nincs a feltételeknek megfelelő program.</p>
   </div>
 </div>
 HTML;

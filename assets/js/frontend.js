@@ -14,16 +14,6 @@
 
     let allPrograms = [];
 
-    function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, c => ({
-            '&': '&',
-            '<': '<',
-            '>': '>',
-            '"': '"',
-            "'": '''
-        }[c]));
-    }
-
     function formatDate(s) {
         try {
             return new Date(s).toLocaleString('hu-HU');
@@ -34,6 +24,42 @@
 
     function formatPrice(p) {
         return p === 0 ? 'Ingyenes' : p.toLocaleString('hu-HU') + ' Ft';
+    }
+
+    function createProgramCard(p) {
+        const li = document.createElement('li');
+        li.className = 'hk-program-card';
+
+        const title = document.createElement('h3');
+        title.className = 'hk-program-title';
+        title.textContent = p.title;
+
+        const meta = document.createElement('div');
+        meta.className = 'hk-program-meta';
+
+        const location = document.createElement('span');
+        location.textContent = '📍 ' + p.location;
+
+        const timeEl = document.createElement('time');
+        timeEl.dateTime = p.start_at;
+        timeEl.textContent = formatDate(p.start_at);
+
+        const price = document.createElement('span');
+        price.textContent = '💰 ' + formatPrice(p.price_huf);
+
+        meta.append(location, timeEl, price);
+
+        const status = document.createElement('span');
+        status.className = 'hk-status hk-status-' + p.status;
+        status.textContent = p.status_label;
+
+        const cta = document.createElement('button');
+        cta.className = 'hk-cta';
+        cta.disabled = !p.bookable;
+        cta.textContent = p.bookable ? 'Jelentkezem' : p.status_label;
+
+        li.append(title, meta, status, cta);
+        return li;
     }
 
     function render() {
@@ -50,20 +76,8 @@
         }
         emptyEl.hidden = true;
 
-        listEl.innerHTML = filtered.map(p => `
-            <li class="hk-program-card">
-                <h3 class="hk-program-title">${escapeHtml(p.title)}</h3>
-                <div class="hk-program-meta">
-                    <span>📍 ${escapeHtml(p.location)}</span>
-                    <span>🕐 ${formatDate(p.start_at)}</span>
-                    <span>💰 ${formatPrice(p.price_huf)}</span>
-                </div>
-                <span class="hk-status hk-status-${p.status}">${escapeHtml(p.status_label)}</span>
-                <button class="hk-cta" ${!p.bookable ? 'disabled' : ''}>
-                    ${p.bookable ? 'Jelentkezem' : p.status_label}
-                </button>
-            </li>
-        `).join('');
+        listEl.innerHTML = '';
+        filtered.forEach(p => listEl.appendChild(createProgramCard(p)));
     }
 
     async function load() {
