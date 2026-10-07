@@ -18,29 +18,22 @@ class Plugin
 
     public function init(): void
     {
-        $this->loadDependencies();
-        $this->registerShortcode();
         $this->registerRestRoutes();
+        $this->registerShortcode();
     }
 
-    private function loadDependencies(): void
+    private function registerRestRoutes(): void
     {
-        // Dependencies loaded via require_once in bootstrap
+        $provider = new ProgramProvider();
+        $calculator = new ProgramStatusCalculator($provider->getReferenceTime());
+        $restController = new RestController($provider, $calculator);
+
+        add_action('rest_api_init', [$restController, 'registerRoutes']);
     }
 
     private function registerShortcode(): void
     {
         add_shortcode('hetvegi_kalandmento', [$this, 'renderShortcode']);
-    }
-
-    private function registerRestRoutes(): void
-    {
-        add_action('rest_api_init', [$this, 'registerRoutes']);
-    }
-
-    public function registerRoutes(): void
-    {
-        // REST routes will be registered here
     }
 
     public function renderShortcode(): string
