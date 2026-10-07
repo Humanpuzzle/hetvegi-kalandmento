@@ -43,13 +43,13 @@ hetvegi-kalandmento/
 
 ### Program Státuszok
 
-| Érték | Magyarázat |
-|-------|------------|
-| `elerheto` | Elérhető (több mint 20% szabad hely) |
-| `keves_hely` | Már csak néhány hely (≤20% szabad) |
-| `betelt` | Betelt |
-| `lemondva` | Lemondva |
-| `nem_foglalhato` | Nem foglalható (múltbeli, hibás adat, stb.) |
+| Enum érték | Megjelenítés (status_label) | Magyarázat |
+|------------|----------------------------|------------|
+| `available` | Elérhető | Több mint 20% szabad hely |
+| `limited` | Már csak néhány hely | ≤20% szabad hely |
+| `full` | Betelt | Nincs szabad hely |
+| `cancelled` | Lemondva | Program lemondva |
+| `not_bookable` | Nem foglalható | Múltbeli, hibás adat, stb. |
 
 ### Használt Technológiák
 

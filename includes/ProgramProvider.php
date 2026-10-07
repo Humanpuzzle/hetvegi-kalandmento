@@ -12,41 +12,53 @@ defined('ABSPATH') || exit;
 class ProgramProvider
 {
     private string $dataFile;
+    private ?array $parsedData = null;
 
     public function __construct(?string $dataFile = null)
     {
         $this->dataFile = $dataFile ?? plugin_dir_path(__FILE__) . '../../data/programs.json';
     }
 
-    public function getPrograms(): array
+    private function loadData(): array
     {
+        if ($this->parsedData !== null) {
+            return $this->parsedData;
+        }
+
         if (!file_exists($this->dataFile)) {
-            return [];
+            throw new \RuntimeException('A program adatfájl nem található');
         }
 
         $content = file_get_contents($this->dataFile);
-        $data = json_decode($content, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return [];
+        if ($content === false) {
+            throw new \RuntimeException('Nem sikerült beolvasni a program adatfájlt');
         }
 
-        return $data['programs'] ?? [];
+        try {
+            $data = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new \RuntimeException('Érvénytelen JSON a program adatokban: ' . $e->getMessage(), 0, $e);
+        }
+
+        if (!isset($data['programs']) || !is_array($data['programs'])) {
+            throw new \RuntimeException('Hiányzó vagy érvénytelen "programs" a fájlban');
+        }
+
+        if (!isset($data['reference_time']) || !is_string($data['reference_time'])) {
+            throw new \RuntimeException('Hiányzó vagy érvénytelen "reference_time" a fájlban');
+        }
+
+        $this->parsedData = $data;
+        return $data;
     }
 
-    public function getReferenceTime(): ?string
+    public function getPrograms(): array
     {
-        if (!file_exists($this->dataFile)) {
-            return null;
-        }
+        return $this->loadData()['programs'];
+    }
 
-        $content = file_get_contents($this->dataFile);
-        $data = json_decode($content, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return null;
-        }
-
-        return $data['reference_time'] ?? null;
+    public function getReferenceTime(): string
+    {
+        return $this->loadData()['reference_time'];
     }
 }
